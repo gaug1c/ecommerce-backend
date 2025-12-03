@@ -114,37 +114,33 @@ class ProductController extends Controller
 
         $data = $request->except(['image', 'images']);
 
-        // ✅ Génération slug unique
+        // Slug unique
         $slug = Str::slug($request->name);
         $count = Product::where('slug', 'like', "{$slug}%")->count();
         if ($count > 0) {
-            $slug = $slug . '-' . ($count + 1);
+            $slug .= '-' . ($count + 1);
         }
         $data['slug'] = $slug;
 
-        // ✅ Upload image principale Cloudinary
+        // Upload image principale
         if ($request->hasFile('image')) {
-            $uploadedFileUrl = Cloudinary::upload(
+            $uploadedFile = Cloudinary::uploadApi()->upload(
                 $request->file('image')->getRealPath(),
                 ['folder' => 'products']
-            )->getSecurePath();
-
-            $data['image'] = $uploadedFileUrl;
+            );
+            $data['image'] = $uploadedFile['secure_url'];
         }
 
-        // ✅ Upload images multiples Cloudinary
+        // Upload images multiples
         if ($request->hasFile('images')) {
             $imageUrls = [];
-
             foreach ($request->file('images') as $image) {
-                $uploadedFileUrl = Cloudinary::upload(
+                $uploaded = Cloudinary::uploadApi()->upload(
                     $image->getRealPath(),
                     ['folder' => 'products']
-                )->getSecurePath();
-
-                $imageUrls[] = $uploadedFileUrl;
+                );
+                $imageUrls[] = $uploaded['secure_url'];
             }
-
             $data['images'] = json_encode($imageUrls);
         }
 
@@ -203,43 +199,38 @@ class ProductController extends Controller
 
         $data = $request->except(['image', 'images']);
 
-        // ✅ Mise à jour image principale
+        // Mise à jour image principale
         if ($request->hasFile('image')) {
             if ($product->image) {
-                $publicId = basename(parse_url($product->image, PHP_URL_PATH));
-                $publicId = pathinfo($publicId, PATHINFO_FILENAME);
-                Cloudinary::destroy("products/" . $publicId);
+                $publicId = pathinfo(basename(parse_url($product->image, PHP_URL_PATH)), PATHINFO_FILENAME);
+                Cloudinary::uploadApi()->destroy("products/$publicId");
             }
 
-            $uploadedFileUrl = Cloudinary::upload(
+            $uploaded = Cloudinary::uploadApi()->upload(
                 $request->file('image')->getRealPath(),
                 ['folder' => 'products']
-            )->getSecurePath();
-
-            $data['image'] = $uploadedFileUrl;
+            );
+            $data['image'] = $uploaded['secure_url'];
         }
 
-        // ✅ Mise à jour images multiples
+        // Mise à jour images multiples
         if ($request->hasFile('images')) {
             if ($product->images) {
                 $oldImages = json_decode($product->images, true);
                 foreach ($oldImages as $oldImage) {
-                    $publicId = basename(parse_url($oldImage, PHP_URL_PATH));
-                    $publicId = pathinfo($publicId, PATHINFO_FILENAME);
-                    Cloudinary::destroy("products/" . $publicId);
+                    $publicId = pathinfo(basename(parse_url($oldImage, PHP_URL_PATH)), PATHINFO_FILENAME);
+                    Cloudinary::uploadApi()->destroy("products/$publicId");
                 }
             }
 
             $imageUrls = [];
             foreach ($request->file('images') as $image) {
-                $uploadedFileUrl = Cloudinary::upload(
+                $uploaded = Cloudinary::uploadApi()->upload(
                     $image->getRealPath(),
                     ['folder' => 'products']
-                )->getSecurePath();
-
-                $imageUrls[] = $uploadedFileUrl;
+                );
+                $imageUrls[] = $uploaded['secure_url'];
             }
-
             $data['images'] = json_encode($imageUrls);
         }
 
@@ -271,17 +262,15 @@ class ProductController extends Controller
         }
 
         if ($product->image) {
-            $publicId = basename(parse_url($product->image, PHP_URL_PATH));
-            $publicId = pathinfo($publicId, PATHINFO_FILENAME);
-            Cloudinary::destroy("products/" . $publicId);
+            $publicId = pathinfo(basename(parse_url($product->image, PHP_URL_PATH)), PATHINFO_FILENAME);
+            Cloudinary::uploadApi()->destroy("products/$publicId");
         }
 
         if ($product->images) {
             $images = json_decode($product->images, true);
             foreach ($images as $image) {
-                $publicId = basename(parse_url($image, PHP_URL_PATH));
-                $publicId = pathinfo($publicId, PATHINFO_FILENAME);
-                Cloudinary::destroy("products/" . $publicId);
+                $publicId = pathinfo(basename(parse_url($image, PHP_URL_PATH)), PATHINFO_FILENAME);
+                Cloudinary::uploadApi()->destroy("products/$publicId");
             }
         }
 
