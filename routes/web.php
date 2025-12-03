@@ -15,7 +15,6 @@ use App\Http\Controllers\API\PaymentController;
 */
 
 
-
 Route::get('/', function () {
     return view('welcome');
 });
