@@ -14,6 +14,8 @@ use App\Http\Controllers\API\PaymentController;
 |--------------------------------------------------------------------------
 */
 
+dd(env('CLOUDINARY_CLOUD_NAME'));
+
 Route::get('/', function () {
     return view('welcome');
 });
