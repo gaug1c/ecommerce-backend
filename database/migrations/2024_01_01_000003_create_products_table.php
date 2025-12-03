@@ -13,32 +13,54 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained()->onDelete('cascade');
+
+            // ✅ Relations
+            $table->foreignId('category_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            // ✅ Informations principales
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description');
+
+            // ✅ Prix & stock
             $table->decimal('price', 10, 2);
             $table->decimal('discount_price', 10, 2)->nullable();
             $table->integer('stock')->default(0);
+
+            // ✅ Logistique
             $table->string('sku')->unique()->nullable();
             $table->decimal('weight', 8, 2)->nullable()->comment('Poids en kg');
             $table->string('dimensions')->nullable()->comment('L x l x H en cm');
-            $table->string('image')->nullable();
-            $table->json('images')->nullable()->comment('Images supplémentaires');
+
+            // ✅ Images Cloudinary (URLS)
+            $table->text('image')->nullable()->comment('URL Cloudinary image principale');
+            $table->json('images')->nullable()->comment('URLs Cloudinary images supplémentaires');
+
+            // ✅ Mise en avant & visibilité
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_active')->default(true);
+
+            // ✅ Livraison
             $table->boolean('shipping_available')->default(true);
-            $table->json('shipping_cities')->nullable()->comment('Villes de livraison disponibles');
+            $table->json('shipping_cities')->nullable()->comment('Villes de livraison');
             $table->decimal('shipping_cost', 10, 2)->nullable()->comment('Frais de livraison en FCFA');
+
+            // ✅ SEO
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
             $table->text('meta_keywords')->nullable();
+
+            // ✅ Dates & suppression logique
             $table->timestamps();
             $table->softDeletes();
 
+            // ✅ Index pour performance
             $table->index(['category_id', 'is_active']);
             $table->index('is_featured');
             $table->index('price');
+            $table->index('stock');
         });
     }
 

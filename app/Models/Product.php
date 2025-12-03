@@ -11,9 +11,7 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * Attributs assignables en masse
      */
     protected $fillable = [
         'name',
@@ -39,9 +37,7 @@ class Product extends Model
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * Casts automatiques
      */
     protected $casts = [
         'price' => 'decimal:2',
@@ -52,14 +48,12 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
         'shipping_available' => 'boolean',
-        'images' => 'array',
-        'shipping_cities' => 'array',
+        'images' => 'array',           // ✅ JSON → array
+        'shipping_cities' => 'array',  // ✅ JSON → array
     ];
 
     /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array
+     * Attributs calculés retournés dans l'API
      */
     protected $appends = [
         'final_price',
@@ -71,40 +65,39 @@ class Product extends Model
     ];
 
     /**
-     * Relation avec la catégorie
+     * =========================
+     * ✅ RELATIONS
+     * =========================
      */
+
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Relation avec les items du panier
-     */
     public function cartItems()
     {
         return $this->hasMany(CartItem::class);
     }
 
-    /**
-     * Relation avec les items de commande
-     */
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
 
     /**
-     * Obtenir le prix final (avec remise si applicable)
+     * =========================
+     * ✅ ACCESSORS
+     * =========================
      */
+
+    // ✅ Prix final
     public function getFinalPriceAttribute()
     {
         return $this->discount_price ?? $this->price;
     }
 
-    /**
-     * Calculer le pourcentage de remise
-     */
+    // ✅ Pourcentage de remise
     public function getDiscountPercentageAttribute()
     {
         if ($this->discount_price && $this->price > 0) {
@@ -113,85 +106,66 @@ class Product extends Model
         return 0;
     }
 
-    /**
-     * Vérifier si le produit est en promotion
-     */
+    // ✅ Produit en promotion ?
     public function getIsOnSaleAttribute()
     {
         return $this->discount_price && $this->discount_price < $this->price;
     }
 
-    /**
-     * Vérifier si le produit est en stock
-     */
+    // ✅ Produit en stock ?
     public function getIsInStockAttribute()
     {
         return $this->stock > 0;
     }
 
-    /**
-     * Obtenir l'URL complète de l'image principale
-     */
+    // ✅ URL Cloudinary de l’image principale
     public function getImageUrlAttribute()
     {
         if ($this->image) {
-            return asset('storage/' . $this->image);
+            return $this->image; // ✅ Déjà une URL Cloudinary
         }
-        return asset('images/no-image.png');
+        return 'https://res.cloudinary.com/demo/image/upload/v1699999999/no-image.png';
     }
 
-    /**
-     * Obtenir les URLs complètes des images supplémentaires
-     */
+    // ✅ URLs Cloudinary des images supplémentaires
     public function getImagesUrlsAttribute()
     {
         if ($this->images && is_array($this->images)) {
-            return array_map(function($image) {
-                return asset('storage/' . $image);
-            }, $this->images);
+            return $this->images; // ✅ Déjà un tableau d’URLs
         }
         return [];
     }
 
     /**
-     * Scope pour les produits en stock
+     * =========================
+     * ✅ SCOPES
+     * =========================
      */
+
     public function scopeInStock($query)
     {
         return $query->where('stock', '>', 0);
     }
 
-    /**
-     * Scope pour les produits actifs
-     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Scope pour les produits en vedette
-     */
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
     }
 
-    /**
-     * Scope pour les produits en promotion
-     */
     public function scopeOnSale($query)
     {
         return $query->whereNotNull('discount_price')
                      ->whereColumn('discount_price', '<', 'price');
     }
 
-    /**
-     * Scope pour rechercher des produits
-     */
     public function scopeSearch($query, $search)
     {
-        return $query->where(function($q) use ($search) {
+        return $query->where(function ($q) use ($search) {
             $q->where('name', 'like', "%{$search}%")
               ->orWhere('description', 'like', "%{$search}%")
               ->orWhere('sku', 'like', "%{$search}%");
@@ -199,8 +173,11 @@ class Product extends Model
     }
 
     /**
-     * Décrémenter le stock
+     * =========================
+     * ✅ GESTION DU STOCK
+     * =========================
      */
+
     public function decrementStock($quantity)
     {
         if ($this->stock >= $quantity) {
@@ -210,9 +187,6 @@ class Product extends Model
         return false;
     }
 
-    /**
-     * Incrémenter le stock
-     */
     public function incrementStock($quantity)
     {
         $this->increment('stock', $quantity);

@@ -1,0 +1,174 @@
+[
+  {
+    "category_id": 1,
+    "name": "Chaussures Homme",
+    "slug": "chaussures-homme",
+    "description": "Chaussures élégantes pour homme",
+    "price": 50000,
+    "stock": 50,
+    "image": null
+  },
+
+  {
+    "category_id": 2,
+    "name": "T-shirt Homme",
+    "slug": "tshirt-homme",
+    "description": "T-shirt coton bio pour homme",
+    "price": 15000,
+    "stock": 100,
+    "image": null
+  },
+  {
+    "category_id": 2,
+    "name": "T-shirt Femme",
+    "slug": "tshirt-femme",
+    "description": "T-shirt coton bio pour femme",
+    "price": 15000,
+    "stock": 90,
+    "image": null
+  },
+  {
+    "category_id": 3,
+    "name": "Jean Homme",
+    "slug": "jean-homme",
+    "description": "Jean denim confortable",
+    "price": 30000,
+    "stock": 60,
+    "image": null
+  },
+  {
+    "category_id": 3,
+    "name": "Jean Femme",
+    "slug": "jean-femme",
+    "description": "Jean denim confortable",
+    "price": 32000,
+    "stock": 55,
+    "image": null
+  },
+  {
+    "category_id": 4,
+    "name": "Robe Femme",
+    "slug": "robe-femme",
+    "description": "Robe chic pour soirée",
+    "price": 40000,
+    "stock": 35,
+    "image": null
+  },
+  {
+    "category_id": 4,
+    "name": "Robe Été",
+    "slug": "robe-ete",
+    "description": "Robe légère pour l’été",
+    "price": 35000,
+    "stock": 45,
+    "image": null
+  },
+  {
+    "category_id": 5,
+    "name": "Casquette",
+    "slug": "casquette",
+    "description": "Casquette sport",
+    "price": 8000,
+    "stock": 150,
+    "image": null
+  },
+  {
+    "category_id": 5,
+    "name": "Chapeau",
+    "slug": "chapeau",
+    "description": "Chapeau élégant",
+    "price": 12000,
+    "stock": 60,
+    "image": null
+  },
+  {
+    "category_id": 6,
+    "name": "Sac à main",
+    "slug": "sac-a-main",
+    "description": "Sac à main femme",
+    "price": 45000,
+    "stock": 30,
+    "image": null
+  },
+  {
+    "category_id": 6,
+    "name": "Sac à dos",
+    "slug": "sac-a-dos",
+    "description": "Sac à dos sport",
+    "price": 25000,
+    "stock": 50,
+    "image": null
+  },
+  {
+    "category_id": 7,
+    "name": "Montre Homme",
+    "slug": "montre-homme",
+    "description": "Montre élégante",
+    "price": 70000,
+    "stock": 20,
+    "image": null
+  },
+  {
+    "category_id": 7,
+    "name": "Montre Femme",
+    "slug": "montre-femme",
+    "description": "Montre chic pour femme",
+    "price": 75000,
+    "stock": 18,
+    "image": null
+  },
+  {
+    "category_id": 8,
+    "name": "Lunettes de soleil",
+    "slug": "lunettes-de-soleil",
+    "description": "Lunettes protection UV",
+    "price": 20000,
+    "stock": 40,
+    "image": null
+  },
+  {
+    "category_id": 8,
+    "name": "Lunettes mode",
+    "slug": "lunettes-mode",
+    "description": "Lunettes tendance",
+    "price": 22000,
+    "stock": 30,
+    "image": null
+  },
+  {
+    "category_id": 9,
+    "name": "Veste Homme",
+    "slug": "veste-homme",
+    "description": "Veste hiver",
+    "price": 60000,
+    "stock": 25,
+    "image": null
+  },
+  {
+    "category_id": 9,
+    "name": "Veste Femme",
+    "slug": "veste-femme",
+    "description": "Veste hiver femme",
+    "price": 62000,
+    "stock": 20,
+    "image": null
+  },
+  {
+    "category_id": 10,
+    "name": "Pull Homme",
+    "slug": "pull-homme",
+    "description": "Pull chaud",
+    "price": 35000,
+    "stock": 30,
+    "image": null
+  },
+  {
+    "category_id": 10,
+    "name": "Pull Femme",
+    "slug": "pull-femme",
+    "description": "Pull chaud femme",
+    "price": 36000,
+    "stock": 28,
+    "image": null
+  }
+]
