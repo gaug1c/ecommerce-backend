@@ -14,7 +14,7 @@ class PaymentController extends Controller
     public function processPayment(Request $request, $orderId)
     {
         $validator = Validator::make($request->all(), [
-            'payment_method' => 'required|in:card,paypal,bank_transfer,cash_on_delivery',
+            'payment_method' => 'required|in:card,mobile_money,paypal,bank_transfer,cash_on_delivery',
             'card_number' => 'required_if:payment_method,card|string',
             'card_holder_name' => 'required_if:payment_method,card|string',
             'card_expiry' => 'required_if:payment_method,card|string',
@@ -73,8 +73,6 @@ class PaymentController extends Controller
 
             if ($paymentStatus === 'completed') {
                 $order->update(['status' => 'paid']);
-            } elseif ($paymentStatus === 'failed') {
-                $order->update(['status' => 'payment_failed']);
             }
 
             DB::commit();
