@@ -228,10 +228,10 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
             return response()->json([
                 'success' => false,
-                'message' => 'Webhook processing failed'
+                'message' => 'Webhook processing failed',
+                'error' => $e->getMessage() // ← important pour debug //deleted while deployement
             ], 500);
         }
     }
