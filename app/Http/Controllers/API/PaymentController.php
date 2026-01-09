@@ -38,12 +38,6 @@ class PaymentController extends Controller
             ], 404);
         }
 
-        if ($order->status !== 'pending') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order cannot be paid'
-            ], 422);
-        }
 
         // Check if payment already exists
         if ($order->payment) {
@@ -72,7 +66,7 @@ class PaymentController extends Controller
             ]);
 
             if ($paymentStatus === 'completed') {
-                $order->update(['status' => 'confirmed']);
+                $order->update(['payment_status' => 'paid']);
             }
 
             DB::commit();
@@ -216,7 +210,7 @@ class PaymentController extends Controller
             $payment->update(['status' => $status]);
 
             if ($status === 'completed') {
-                $payment->order->update(['status' => 'confirmed']);
+                $payment->order->update(['payment_status' => 'paid']);
             } 
 
             DB::commit();
