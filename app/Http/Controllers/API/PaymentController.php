@@ -72,7 +72,7 @@ class PaymentController extends Controller
             ]);
 
             if ($paymentStatus === 'completed') {
-                $order->update(['status' => 'paid']);
+                $order->update(['status' => 'confirmed']);
             }
 
             DB::commit();
@@ -216,7 +216,7 @@ class PaymentController extends Controller
             $payment->update(['status' => $status]);
 
             if ($status === 'completed') {
-                $payment->order->update(['status' => 'paid']);
+                $payment->order->update(['status' => 'confirmed']);
             } 
 
             DB::commit();
