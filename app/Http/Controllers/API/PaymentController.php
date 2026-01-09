@@ -217,9 +217,7 @@ class PaymentController extends Controller
 
             if ($status === 'completed') {
                 $payment->order->update(['status' => 'paid']);
-            } elseif ($status === 'failed') {
-                $payment->order->update(['status' => 'payment_failed']);
-            }
+            } 
 
             DB::commit();
 
