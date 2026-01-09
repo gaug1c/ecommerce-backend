@@ -80,7 +80,11 @@ class OrderController extends Controller
             'shipping_city' => 'required|string|in:Libreville,Port-Gentil,Franceville,Oyem,Moanda,Mouila,Lambaréné,Tchibanga,Koulamoutou,Makokou',
             'shipping_postal_code' => 'nullable|string',
             'shipping_country' => 'required|string',
-            'phone' => 'required|string|regex:/^((\+241|00241)?[0-9]{8,9})$/',
+            'phone' => [
+                'required',
+                'string',
+                'regex:/^(\+241|00241)?[0-9]{8,9}$/'
+            ],
             'delivery_instructions' => 'nullable|string',
             'payment_method' => 'required|in:card,mobile_money,bank_transfer,cash_on_delivery'
         ], [
