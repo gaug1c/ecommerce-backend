@@ -369,4 +369,47 @@ class OrderController extends Controller
             'data' => $order
         ]);
     }
+
+    // Confirmation de la commande par le vendeur
+    public function confirmOrder(Request $request, $id)
+    {
+        $order = Order::with('items.product')
+            ->find($id);
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Commande non trouvée'
+            ], 404);
+        }
+
+        // Vérifier si le vendeur a le droit (ex: produit appartient à ce vendeur)
+        foreach ($order->items as $item) {
+            if ($item->product->seller_id !== $request->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous ne pouvez pas confirmer cette commande'
+                ], 403);
+            }
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'La commande ne peut pas être confirmée. Statut actuel : '.$order->status
+            ], 422);
+        }
+
+        $order->update([
+            'status' => Order::STATUS_CONFIRMED,
+            'confirmed_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Commande confirmée par le vendeur.',
+            'data' => $order
+        ]);
+    }
+
 }

@@ -12,29 +12,20 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * Attributs assignables en masse
      */
     protected $fillable = [
         'name',
         'email',
         'password',
         'phone',
-        'address',
-        'city',
-        'postal_code',
-        'country',
         'avatar',
-        'role',
         'is_active',
-        'email_verified_at'
+        'email_verified_at',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
+     * Attributs cachés pour l'API
      */
     protected $hidden = [
         'password',
@@ -42,68 +33,88 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * Casts automatiques
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Relation avec le panier
-     */
-    public function cart()
+    /* =======================
+       RELATIONS
+    ======================== */
+
+    // Relation many-to-many avec les rôles
+    public function roles()
     {
-        return $this->hasOne(Cart::class);
+        return $this->belongsToMany(Role::class, 'user_roles');
+    }
+
+    // Relation one-to-one avec le profil vendeur
+    public function sellerProfile()
+    {
+        return $this->hasOne(SellerProfile::class);
+    }
+
+    // Relation one-to-many avec les adresses
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    /* =======================
+       HELPERS & ROLE CHECKS
+    ======================== */
+
+    /**
+     * Vérifie si l'utilisateur a un rôle donné
+     */
+    public function hasRole(string $role): bool
+    {
+        return $this->roles()->where('name', $role)->exists();
     }
 
     /**
-     * Relation avec les commandes
+     * Vérifie si l'utilisateur est admin
      */
-    public function orders()
+    public function isAdmin(): bool
     {
-        return $this->hasMany(Order::class);
+        return $this->hasRole('admin');
     }
 
     /**
-     * Vérifier si l'utilisateur est admin
+     * Vérifie si l'utilisateur est vendeur
      */
-    public function isAdmin()
+    public function isSeller(): bool
     {
-        return $this->role === 'admin';
+        return $this->hasRole('seller');
     }
 
     /**
-     * Vérifier si l'utilisateur est client
+     * Vérifie si l'utilisateur est client
      */
-    public function isCustomer()
+    public function isCustomer(): bool
     {
-        return $this->role === 'customer';
+        return $this->hasRole('customer');
+    }
+
+    /* =======================
+       UTILS POUR LE PROFIL VENDEUR
+    ======================== */
+
+    /**
+     * Retourne true si le profil vendeur est créé et actif
+     */
+    public function sellerProfileActive(): bool
+    {
+        return $this->sellerProfile && $this->sellerProfile->seller_status === 'active';
     }
 
     /**
-     * Obtenir le nom complet
+     * Retourne le nom de la boutique si existante
      */
-    public function getFullNameAttribute()
+    public function shopName(): ?string
     {
-        return $this->name;
-    }
-
-    /**
-     * Obtenir l'adresse complète
-     */
-    public function getFullAddressAttribute()
-    {
-        $parts = array_filter([
-            $this->address,
-            $this->city,
-            $this->postal_code,
-            $this->country ?? 'Gabon'
-        ]);
-        
-        return implode(', ', $parts);
+        return $this->sellerProfile ? $this->sellerProfile->shop_name : null;
     }
 }

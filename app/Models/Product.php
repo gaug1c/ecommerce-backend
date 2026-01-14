@@ -14,6 +14,7 @@ class Product extends Model
      * Attributs assignables en masse
      */
     protected $fillable = [
+        'seller_id',             // ✅ Ajout du vendeur
         'name',
         'slug',
         'description',
@@ -40,6 +41,7 @@ class Product extends Model
      * Casts automatiques
      */
     protected $casts = [
+        'seller_id' => 'integer',      // ✅ Cast du vendeur
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
@@ -48,8 +50,8 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
         'shipping_available' => 'boolean',
-        'images' => 'array',           // ✅ JSON → array
-        'shipping_cities' => 'array',  // ✅ JSON → array
+        'images' => 'array',
+        'shipping_cities' => 'array',
     ];
 
     /**
@@ -75,6 +77,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function seller()
+    {
+        return $this->belongsTo(User::class, 'seller_id'); // ✅ Relation avec le vendeur
+    }
+
     public function cartItems()
     {
         return $this->hasMany(CartItem::class);
@@ -91,13 +98,11 @@ class Product extends Model
      * =========================
      */
 
-    // ✅ Prix final
     public function getFinalPriceAttribute()
     {
         return $this->discount_price ?? $this->price;
     }
 
-    // ✅ Pourcentage de remise
     public function getDiscountPercentageAttribute()
     {
         if ($this->discount_price && $this->price > 0) {
@@ -106,34 +111,24 @@ class Product extends Model
         return 0;
     }
 
-    // ✅ Produit en promotion ?
     public function getIsOnSaleAttribute()
     {
         return $this->discount_price && $this->discount_price < $this->price;
     }
 
-    // ✅ Produit en stock ?
     public function getIsInStockAttribute()
     {
         return $this->stock > 0;
     }
 
-    // ✅ URL Cloudinary de l’image principale
     public function getImageUrlAttribute()
     {
-        if ($this->image) {
-            return $this->image; // ✅ Déjà une URL Cloudinary
-        }
-        return 'https://res.cloudinary.com/demo/image/upload/v1699999999/no-image.png';
+        return $this->image ?? 'https://res.cloudinary.com/demo/image/upload/v1699999999/no-image.png';
     }
 
-    // ✅ URLs Cloudinary des images supplémentaires
     public function getImagesUrlsAttribute()
     {
-        if ($this->images && is_array($this->images)) {
-            return $this->images; // ✅ Déjà un tableau d’URLs
-        }
-        return [];
+        return $this->images ?? [];
     }
 
     /**
@@ -170,6 +165,11 @@ class Product extends Model
               ->orWhere('description', 'like', "%{$search}%")
               ->orWhere('sku', 'like', "%{$search}%");
         });
+    }
+
+    public function scopeForSeller($query, $sellerId)
+    {
+        return $query->where('seller_id', $sellerId); // ✅ Scope pour filtrer par vendeur
     }
 
     /**

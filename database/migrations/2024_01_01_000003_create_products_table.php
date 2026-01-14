@@ -19,6 +19,11 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
+            // ✅ Relation vendeur
+            $table->foreignId('seller_id')
+                ->constrained('users') // lien vers table users
+                ->cascadeOnDelete();
+
             // ✅ Informations principales
             $table->string('name');
             $table->string('slug')->unique();
@@ -61,6 +66,7 @@ return new class extends Migration
             $table->index('is_featured');
             $table->index('price');
             $table->index('stock');
+            $table->index('seller_id'); // index sur le vendeur pour filtrer facilement
         });
     }
 

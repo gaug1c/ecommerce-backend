@@ -18,6 +18,11 @@ class ProductController extends Controller
     {
         $query = Product::with('category');
 
+        // Si l'utilisateur est un vendeur et veut voir ses produits
+        if ($request->user()->role === 'seller' && $request->has('my_products')) {
+            $query->where('seller_id', $request->user()->id);
+        }
+
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
         }
@@ -86,6 +91,16 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        $user = $request->user();
+
+        // Vérifier que l'utilisateur est vendeur OU admin
+        if (!$user->isSeller() && !$user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de créer un produit'
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -113,6 +128,12 @@ class ProductController extends Controller
         }
 
         $data = $request->except(['image', 'images']);
+
+        // Associer le vendeur ou admin
+        if ($request->user()->isSeller() || $request->user()->isAdmin()) {
+            $data['seller_id'] = $request->user()->id;
+        }
+
 
         // Slug unique
         $slug = Str::slug($request->name);
@@ -171,6 +192,15 @@ class ProductController extends Controller
             ], 404);
         }
 
+        // Vérifier que le vendeur est le propriétaire du produit ou admin
+        if ($request->user()->role === 'seller' && $product->seller_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de modifier ce produit'
+            ], 403);
+        }
+
+        // Validation identique à store()
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
@@ -199,13 +229,12 @@ class ProductController extends Controller
 
         $data = $request->except(['image', 'images']);
 
-        // Mise à jour image principale
+        // Upload image principale et multiples
         if ($request->hasFile('image')) {
             if ($product->image) {
                 $publicId = pathinfo(basename(parse_url($product->image, PHP_URL_PATH)), PATHINFO_FILENAME);
                 Cloudinary::uploadApi()->destroy("products/$publicId");
             }
-
             $uploaded = Cloudinary::uploadApi()->upload(
                 $request->file('image')->getRealPath(),
                 ['folder' => 'products']
@@ -213,7 +242,6 @@ class ProductController extends Controller
             $data['image'] = $uploaded['secure_url'];
         }
 
-        // Mise à jour images multiples
         if ($request->hasFile('images')) {
             if ($product->images) {
                 $oldImages = json_decode($product->images, true);
@@ -222,7 +250,6 @@ class ProductController extends Controller
                     Cloudinary::uploadApi()->destroy("products/$publicId");
                 }
             }
-
             $imageUrls = [];
             foreach ($request->file('images') as $image) {
                 $uploaded = Cloudinary::uploadApi()->upload(
@@ -250,7 +277,7 @@ class ProductController extends Controller
     /**
      * Suppression produit
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $product = Product::find($id);
 
@@ -261,11 +288,19 @@ class ProductController extends Controller
             ], 404);
         }
 
+        // Vérifier que le vendeur est le propriétaire ou admin
+        if ($request->user()->role === 'seller' && $product->seller_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de supprimer ce produit'
+            ], 403);
+        }
+
+        // Supprimer images Cloudinary
         if ($product->image) {
             $publicId = pathinfo(basename(parse_url($product->image, PHP_URL_PATH)), PATHINFO_FILENAME);
             Cloudinary::uploadApi()->destroy("products/$publicId");
         }
-
         if ($product->images) {
             $images = json_decode($product->images, true);
             foreach ($images as $image) {

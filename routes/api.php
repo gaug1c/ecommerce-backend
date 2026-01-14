@@ -7,6 +7,8 @@ use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\SellerController;
+use App\Http\Middleware\SellerMiddleware;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,8 +30,8 @@ Route::get('/', function () {
 Route::prefix('v1')->group(function () {
     
     // Authentification
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);// delete after: okay 
+    Route::post('/login', [AuthController::class, 'login']);// delete after: okay
 
     // Produits (lecture seule)
     Route::get('/products', [ProductController::class, 'index']);
@@ -48,8 +50,11 @@ Route::prefix('v1')->group(function () {
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     
     // Authentification
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout']);// delete after: okay
     Route::get('/user', [AuthController::class, 'user']);
+
+    // Devenir un vendeur
+    Route::post('/seller/become', [SellerController::class, 'becomeSeller']);
 
     // Panier
     Route::get('/cart', [CartController::class, 'index']);
@@ -67,11 +72,24 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('/orders/track/{orderNumber}', [OrderController::class, 'track']);
     Route::post('/orders/{id}/confirm-delivery', [OrderController::class, 'confirmDelivery']);
 
+    //Confrimation de la commande par le vendeur
+    
+    Route::post('/orders/{id}/confirm', [OrderController::class, 'confirmOrder']);
+
     // Paiements
     Route::post('/payments/orders/{orderId}', [PaymentController::class, 'processPayment']);
     Route::get('/payments/orders/{orderId}/status', [PaymentController::class, 'getPaymentStatus']);
     Route::post('/payments/{paymentId}/refund', [PaymentController::class, 'refund']);
 });
+
+// Routes API protégées pour les vendeurs
+
+Route::prefix('v1/seller')->middleware(['auth:sanctum', SellerMiddleware::class])->group(function () {
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{id}', [ProductController::class, 'update']);
+    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+});
+
 
 // Routes Admin (nécessitent authentification + rôle admin)
 Route::prefix('v1/admin')->middleware(['auth:sanctum', 'admin'])->group(function () {

@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // ========================
+        // USERS
+        // ========================
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -18,23 +18,27 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('phone')->nullable();
-            $table->text('address')->nullable();
-            $table->string('city')->nullable();
-            $table->string('postal_code')->nullable();
-            $table->string('country')->default('Gabon');
+            $table->timestamp('phone_verified_at')->nullable();
             $table->string('avatar')->nullable();
-            $table->enum('role', ['customer', 'admin'])->default('customer');
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });
 
+        
+
+        // ========================
+        // PASSWORD RESET TOKENS
+        // ========================
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // ========================
+        // SESSIONS
+        // ========================
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -45,12 +49,17 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        // Supprimer d'abord les tables dépendantes
+        Schema::dropIfExists('seller_profiles');   // dépend de users
+        Schema::dropIfExists('user_roles');        // pivot entre users et roles
+
+        // Supprimer les tables principales
+        Schema::dropIfExists('roles');             // table principale pour les rôles
+        Schema::dropIfExists('users');             // table principale pour les utilisateurs
+
+        // Tables indépendantes
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }
