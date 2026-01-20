@@ -177,7 +177,7 @@ class ProductController extends Controller
             'sku' => 'nullable|string|unique:products,sku',
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string',
-            'image' => 'required|string', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'is_featured' => 'boolean',
@@ -277,7 +277,7 @@ class ProductController extends Controller
             'sku' => 'nullable|string|unique:products,sku,' . $id,
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string',
-            'image' => 'required|string', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'is_featured' => 'boolean',
