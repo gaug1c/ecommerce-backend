@@ -107,7 +107,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * Mettre à jour une catégorie
+     * Mettre à jour une catégorie 
      */
     public function update(Request $request, $id)
     {

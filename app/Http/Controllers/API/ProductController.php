@@ -15,48 +15,70 @@ class ProductController extends Controller
      * Liste des produits
      */
     public function index(Request $request)
+{
+    $query = Product::with('category');
+    $user = $request->user();
+
+    // 🔐 Filtre vendeur UNIQUEMENT si connecté
+    if ($user && $user->role === 'seller' && $request->boolean('my_products')) {
+        $query->where('seller_id', $user->id);
+    }
+
+    if ($request->filled('category_id')) {
+        $query->where('category_id', $request->category_id);
+    }
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('min_price')) {
+        $query->where('price', '>=', $request->min_price);
+    }
+
+    if ($request->filled('max_price')) {
+        $query->where('price', '<=', $request->max_price);
+    }
+
+    if ($request->boolean('in_stock')) {
+        $query->where('stock', '>', 0);
+    }
+
+    if ($request->boolean('on_sale')) {
+        $query->whereNotNull('discount_price');
+    }
+
+    // 🔐 Sécuriser le tri (important)
+    $allowedSorts = ['created_at', 'price', 'name'];
+    $sortBy = in_array($request->get('sort_by'), $allowedSorts)
+        ? $request->get('sort_by')
+        : 'created_at';
+
+    $sortOrder = $request->get('sort_order') === 'asc' ? 'asc' : 'desc';
+
+    $products = $query->orderBy($sortBy, $sortOrder)
+                      ->paginate($request->get('per_page', 15));
+
+    return response()->json([
+        'success' => true,
+        'data' => $products,
+        'currency' => 'FCFA'
+    ]);
+}
+    /**
+     * Produits en vedette
+     */
+    public function featured()
     {
-        $query = Product::with('category');
-
-        // Si l'utilisateur est un vendeur et veut voir ses produits
-        if ($request->user()->role === 'seller' && $request->has('my_products')) {
-            $query->where('seller_id', $request->user()->id);
-        }
-
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->has('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
-
-        if ($request->has('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
-
-        if ($request->has('in_stock')) {
-            $query->where('stock', '>', 0);
-        }
-
-        if ($request->has('on_sale')) {
-            $query->whereNotNull('discount_price');
-        }
-
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
-
-        $perPage = $request->get('per_page', 15);
-        $products = $query->paginate($perPage);
+        $products = Product::with('category')
+            ->where('is_featured', true)
+            ->where('stock', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         return response()->json([
             'success' => true,
@@ -64,6 +86,8 @@ class ProductController extends Controller
             'currency' => 'FCFA'
         ]);
     }
+
+
 
     /**
      * Détail produit
@@ -85,6 +109,48 @@ class ProductController extends Controller
             'currency' => 'FCFA'
         ]);
     }
+    /**
+     * Produits en promotion
+     */
+    public function onSale()
+    {
+        $products = Product::with('category')
+            ->whereNotNull('discount_price')
+            ->where('stock', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return response()->json([
+            'success' => true,
+            'data' => $products,
+            'currency' => 'FCFA'
+        ]);
+    }
+
+    /**
+     * Vérifier la disponibilité d'un produit
+     */
+    public function checkAvailability($id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Produit non trouvé'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'in_stock' => $product->stock > 0,
+                'stock' => $product->stock
+            ]
+        ]);
+    }
+
+
 
     /**
      * Création produit
@@ -111,7 +177,7 @@ class ProductController extends Controller
             'sku' => 'nullable|string|unique:products,sku',
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string',
-            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'image' => 'required|string', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'is_featured' => 'boolean',
@@ -211,7 +277,7 @@ class ProductController extends Controller
             'sku' => 'nullable|string|unique:products,sku,' . $id,
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'image' => 'required|string', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'is_featured' => 'boolean',

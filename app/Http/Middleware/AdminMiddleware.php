@@ -24,7 +24,7 @@ class AdminMiddleware
         }
 
         // Vérifier si l'utilisateur est admin
-        if ($request->user()->role !== 'admin') {
+        if (!$request->user()->roles()->where('name', 'admin')->exists()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Accès refusé. Droits administrateur requis.'
