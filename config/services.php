@@ -17,6 +17,13 @@ return [
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
+    'singpay' => [
+    'client_id' => env('SINGPAY_CLIENT_ID'),
+    'client_secret' => env('SINGPAY_CLIENT_SECRET'),
+    'token_url' => env('SINGPAY_TOKEN_URL'),
+    'api_url' => env('SINGPAY_API_URL'),
+    ],
+
 
     'resend' => [
         'key' => env('RESEND_KEY'),

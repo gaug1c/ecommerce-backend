@@ -14,61 +14,81 @@ class ProductController extends Controller
     /**
      * Liste des produits
      */
-    public function index(Request $request)
+public function index(Request $request)
 {
-    $query = Product::with('category');
     $user = $request->user();
 
-    // 🔐 Filtre vendeur UNIQUEMENT si connecté
-    if ($user && $user->role === 'seller' && $request->boolean('my_products')) {
-        $query->where('seller_id', $user->id);
-    }
+    $query = Product::query()
+        ->with(['category:id,name'])
+        ->when(
+            $user && $user->role === 'seller' && $request->boolean('my_products'),
+            fn ($q) => $q->where('seller_id', $user->id)
+        )
+        ->when(
+            $request->filled('category_id'),
+            fn ($q) => $q->where('category_id', $request->category_id)
+        )
+        ->when(
+            $request->filled('search'),
+            function ($q) use ($request) {
+                $search = trim($request->search);
+                $q->where(fn ($sub) =>
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                );
+            }
+        )
+        ->when(
+            $request->filled('min_price'),
+            fn ($q) => $q->where('price', '>=', (int) $request->min_price)
+        )
+        ->when(
+            $request->filled('max_price'),
+            fn ($q) => $q->where('price', '<=', (int) $request->max_price)
+        )
+        ->when(
+            $request->boolean('in_stock'),
+            fn ($q) => $q->where('stock', '>', 0)
+        )
+        ->when(
+            $request->boolean('on_sale'),
+            fn ($q) => $q->whereNotNull('discount_price')
+        );
 
-    if ($request->filled('category_id')) {
-        $query->where('category_id', $request->category_id);
-    }
+    // 🔐 Tri sécurisé
+    $allowedSorts = [
+        'created_at' => 'created_at',
+        'price'      => 'price',
+        'name'       => 'name',
+    ];
 
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%");
-        });
-    }
-
-    if ($request->filled('min_price')) {
-        $query->where('price', '>=', $request->min_price);
-    }
-
-    if ($request->filled('max_price')) {
-        $query->where('price', '<=', $request->max_price);
-    }
-
-    if ($request->boolean('in_stock')) {
-        $query->where('stock', '>', 0);
-    }
-
-    if ($request->boolean('on_sale')) {
-        $query->whereNotNull('discount_price');
-    }
-
-    // 🔐 Sécuriser le tri (important)
-    $allowedSorts = ['created_at', 'price', 'name'];
-    $sortBy = in_array($request->get('sort_by'), $allowedSorts)
-        ? $request->get('sort_by')
-        : 'created_at';
-
+    $sortBy = $allowedSorts[$request->get('sort_by')] ?? 'created_at';
     $sortOrder = $request->get('sort_order') === 'asc' ? 'asc' : 'desc';
 
-    $products = $query->orderBy($sortBy, $sortOrder)
-                      ->paginate($request->get('per_page', 15));
+    $products = $query
+        ->orderBy($sortBy, $sortOrder)
+        ->paginate(
+            min((int) $request->get('per_page', 15), 50)
+        )
+        ->withQueryString();
 
     return response()->json([
-        'success' => true,
-        'data' => $products,
-        'currency' => 'FCFA'
+        'success'  => true,
+        'currency' => 'FCFA',
+        'data'     => $products,
+        'filters'  => [
+            'category_id' => $request->category_id,
+            'search'      => $request->search,
+            'min_price'   => $request->min_price,
+            'max_price'   => $request->max_price,
+            'in_stock'    => $request->boolean('in_stock'),
+            'on_sale'     => $request->boolean('on_sale'),
+            'sort_by'     => $sortBy,
+            'sort_order'  => $sortOrder,
+        ],
     ]);
 }
+
     /**
      * Produits en vedette
      */
@@ -177,7 +197,7 @@ class ProductController extends Controller
             'sku' => 'nullable|string|unique:products,sku',
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string',
-            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
+            'image' => 'required|string|mimes:jpeg,png,jpg,webp|max:5120', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'is_featured' => 'boolean',

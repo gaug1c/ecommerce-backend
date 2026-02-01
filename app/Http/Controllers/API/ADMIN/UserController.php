@@ -87,8 +87,8 @@ class UserController extends Controller
             SellerProfile::create([
                 'user_id'       => $user->id,
                 'shop_name'     => 'Boutique de '.$user->name,
-                'seller_status' => 'approved',
-                'id_card_status'=> 'approved',
+                'seller_status' => 'active',
+                'id_card_status'=> 'verified',
             ]);
         }
 
@@ -231,13 +231,13 @@ class UserController extends Controller
         }
 
         $user->sellerProfile->update([
-            'seller_status'  => 'approved',
-            'id_card_status' => 'approved',
+            'seller_status'  => 'active',
+            'id_card_status' => 'verified',
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Vendeur approuvé'
+            'message' => 'Vendeur vérifié'
         ]);
     }
 
@@ -258,7 +258,7 @@ class UserController extends Controller
         }
 
         $user->sellerProfile->update([
-            'seller_status' => 'suspended',
+            'seller_status' => 'blocked',
         ]);
 
         return response()->json([
