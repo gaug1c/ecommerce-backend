@@ -8,37 +8,49 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // ========================
-        // USERS
-        // ========================
+        /*
+        |--------------------------------------------------------------------------
+        | USERS
+        |--------------------------------------------------------------------------
+        */
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+
+            $table->string('password'); // une seule fois
+
             $table->string('phone')->nullable();
             $table->timestamp('phone_verified_at')->nullable();
+
             $table->string('avatar')->nullable();
             $table->boolean('is_active')->default(true);
+
+            $table->string('provider')->nullable();     // google, facebook
+            $table->string('provider_id')->nullable();  // id externe
+
             $table->rememberToken();
             $table->timestamps();
         });
 
-        
-
-        // ========================
-        // PASSWORD RESET TOKENS
-        // ========================
+        /*
+        |--------------------------------------------------------------------------
+        | PASSWORD RESET TOKENS
+        |--------------------------------------------------------------------------
+        */
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        // ========================
-        // SESSIONS
-        // ========================
+        /*
+        |--------------------------------------------------------------------------
+        | SESSIONS
+        |--------------------------------------------------------------------------
+        */
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -51,16 +63,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Supprimer d'abord les tables dépendantes
-        Schema::dropIfExists('seller_profiles');   // dépend de users
-        Schema::dropIfExists('user_roles');        // pivot entre users et roles
-
-        // Supprimer les tables principales
-        Schema::dropIfExists('roles');             // table principale pour les rôles
-        Schema::dropIfExists('users');             // table principale pour les utilisateurs
-
-        // Tables indépendantes
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

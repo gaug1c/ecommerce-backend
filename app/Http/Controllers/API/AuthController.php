@@ -114,6 +114,13 @@ class AuthController extends Controller
                 'message' => 'Invalid credentials'
             ], 401);
         }
+        // Compte désactivé
+        if (!$user->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Account is disabled'
+            ], 403);
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

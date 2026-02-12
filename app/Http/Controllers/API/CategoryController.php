@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
@@ -91,10 +92,13 @@ class CategoryController extends Controller
         $data = $request->all();
         $data['slug'] = Str::slug($request->name);
 
-        // Upload image
+        // Upload image principale
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('categories', 'public');
-            $data['image'] = $imagePath;
+            $uploadedFile = Cloudinary::uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'categories']
+            );
+            $data['image'] = $uploadedFile['secure_url'];
         }
 
         $category = Category::create($data);

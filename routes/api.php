@@ -10,11 +10,14 @@ use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\SellerController;
 use App\Http\Controllers\API\SingPayWebhookController;
+use App\Http\Controllers\API\GoogleAuthController;
+use App\Http\Controllers\API\FacebookAuthController;
+use App\Http\Controllers\API\NotificationController;
 
 use App\Http\Controllers\API\Admin\UserController;
 use App\Http\Controllers\API\Admin\DashboardController;
 use App\Http\Controllers\API\Admin\AdminOrderController;
-use App\Http\Controllers\API\Admin\AdminPaymentController;
+#use App\Http\Controllers\API\Admin\AdminPaymentController;
 
 use App\Http\Middleware\SellerMiddleware;
 
@@ -34,6 +37,8 @@ Route::prefix('v1')->group(function () {
     // Auth
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/auth/google', [GoogleAuthController::class, 'login']);
+    Route::post('/auth/facebook', [FacebookAuthController::class, 'login']);
 
     // Produits (lecture seule)
     Route::get('/products', [ProductController::class, 'index']);
@@ -69,6 +74,12 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/items/{itemId}', [CartController::class, 'removeItem']);
     Route::delete('/cart/clear', [CartController::class, 'clear']);
     Route::post('/cart/validate', [CartController::class, 'validateCart']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread', [NotificationController::class, 'unread']);
+
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markOneAsRead']);
 
     // Commandes
     Route::get('/orders', [OrderController::class, 'index']);
@@ -140,7 +151,8 @@ Route::prefix('v1/admin')
 
         // Vendeurs
         Route::get('/sellers', [UserController::class, 'sellers']);
-        Route::post('/sellers/{id}/approve', [UserController::class, 'approveSeller']);
+        Route::post('/sellers/{id}/approve', [UserController::class, 'approveSeller']);//okay
+        Route::post('/sellers/{id}/reject', [SellerController::class, 'rejectSeller']);
         Route::post('/sellers/{id}/suspend', [UserController::class, 'suspendSeller']);
 
         // Commandes
@@ -150,9 +162,9 @@ Route::prefix('v1/admin')
         Route::post('/orders/{id}/force-complete', [AdminOrderController::class, 'forceComplete']);
 
         // Paiements
-        Route::get('/payments', [AdminPaymentController::class, 'index']);
-        Route::get('/payments/{id}', [AdminPaymentController::class, 'show']);
-        Route::post('/payments/{id}/refund', [AdminPaymentController::class, 'refund']);
+        // Route::get('/payments', [AdminPaymentController::class, 'index']);
+        // Route::get('/payments/{id}', [AdminPaymentController::class, 'show']);
+        // Route::post('/payments/{id}/refund', [AdminPaymentController::class, 'refund']);
 
         // Produits (admin)
         Route::post('/products', [ProductController::class, 'store']);

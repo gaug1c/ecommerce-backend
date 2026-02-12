@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\SellerProfile;
 use App\Models\User;
+use App\Notifications\SellerApprovedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -219,45 +220,38 @@ class UserController extends Controller
      | APPROUVER VENDEUR
      |--------------------------------------------------------------------------
      */
-    public function approveSeller($id)
+    public function approveSeller($sellerProfileId)
     {
-        $user = User::with('sellerProfile')->findOrFail($id);
+        $sellerProfile = SellerProfile::with('user')->findOrFail($sellerProfileId);
 
-        if (!$user->sellerProfile) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Profil vendeur introuvable'
-            ], 404);
-        }
-
-        $user->sellerProfile->update([
+        $sellerProfile->update([
             'seller_status'  => 'active',
             'id_card_status' => 'verified',
         ]);
 
+        // 🔔 ENVOI NOTIFICATION AU VENDEUR
+        $sellerProfile->user->notify(
+            new SellerApprovedNotification($sellerProfile)
+        );
+
         return response()->json([
             'success' => true,
-            'message' => 'Vendeur vérifié'
+            'message' => 'Vendeur vérifié',
+            'data' => $sellerProfile->load('user')
         ]);
     }
+
 
     /*
      |--------------------------------------------------------------------------
      | SUSPENDRE VENDEUR
      |--------------------------------------------------------------------------
      */
-    public function suspendSeller($id)
+    public function suspendSeller($sellerProfileId)
     {
-        $user = User::with('sellerProfile')->findOrFail($id);
+        $sellerProfile = SellerProfile::with('user')->findOrFail($sellerProfileId);
 
-        if (!$user->sellerProfile) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Profil vendeur introuvable'
-            ], 404);
-        }
-
-        $user->sellerProfile->update([
+        $sellerProfile->update([
             'seller_status' => 'blocked',
         ]);
 
@@ -266,4 +260,5 @@ class UserController extends Controller
             'message' => 'Vendeur suspendu'
         ]);
     }
+
 }

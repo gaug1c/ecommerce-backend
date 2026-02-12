@@ -24,7 +24,7 @@ return new class extends Migration
                 $table->enum('id_card_status', ['pending', 'verified', 'rejected'])
                     ->default('pending');
 
-                $table->enum('seller_status', ['pending', 'active', 'blocked'])
+                $table->enum('seller_status', ['pending', 'active', 'blocked','rejected'])
                     ->default('pending');
 
                 $table->timestamps();
@@ -35,4 +35,4 @@ return new class extends Migration
         {
             Schema::dropIfExists('seller_profiles');
         }
-    };
+};

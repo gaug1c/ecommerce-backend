@@ -19,6 +19,7 @@ class SellerProfile extends Model
         'id_card_path',
         'id_card_status',
         'seller_status',
+        'rejection_reason',
     ];
 
     public function user()

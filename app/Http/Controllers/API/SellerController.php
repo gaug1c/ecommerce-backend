@@ -5,7 +5,11 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\SellerProfile;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\API\Admin\UserController;
+use App\Notifications\SellerRejectedNotification;
+use App\Notifications\NewSellerRequestNotification;
 use Illuminate\Support\Facades\Validator;
 
 class SellerController extends Controller
@@ -45,7 +49,7 @@ class SellerController extends Controller
         /* =======================
             CRÉATION PROFIL VENDEUR
         ======================== */
-        SellerProfile::create([
+        $sellerProfile = SellerProfile::create([
             'user_id'          => $user->id,
             'shop_name'        => $request->shop_name,
             'shop_address'     => $request->shop_address,
@@ -56,11 +60,21 @@ class SellerController extends Controller
             'id_card_status'   => 'pending',
         ]);
 
+        // récupérer les admins
+        $admins = User::whereHas('roles', function ($q) {
+            $q->where('name', 'admin');
+        })->get();
+
+        // envoyer notification
+        foreach ($admins as $admin) {
+            $admin->notify(new NewSellerRequestNotification($sellerProfile));
+        }
+
         /* =======================
             AJOUT RÔLE SELLER
         ======================== */
         $sellerRole = Role::where('name', 'seller')->firstOrFail();
-        $user->roles()->attach($sellerRole->id);
+        $user->roles()->syncWithoutDetaching($sellerRole->id);
 
         return response()->json([
             'success' => true,
@@ -68,4 +82,29 @@ class SellerController extends Controller
             'data' => $user->load('roles', 'sellerProfile')
         ], 201);
     }
+
+    public function rejectSeller(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'required|string'
+        ]);
+
+        $sellerProfile = SellerProfile::findOrFail($id);
+
+        $sellerProfile->update([
+            'seller_status' => 'rejected',
+            'rejection_reason' => $request->reason
+        ]);
+
+        // notifier l'utilisateur
+        $sellerProfile->user->notify(
+            new SellerRejectedNotification($sellerProfile, $request->reason)
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Seller request rejected successfully'
+        ]);
+    }
+
 }
