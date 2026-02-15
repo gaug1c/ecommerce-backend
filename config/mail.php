@@ -52,6 +52,9 @@ return [
         'ses' => [
             'transport' => 'ses',
         ],
+        'mailgun' => [
+            'transport' => 'mailgun',
+        ],
 
         'postmark' => [
             'transport' => 'postmark',

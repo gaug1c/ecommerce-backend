@@ -13,6 +13,8 @@ use App\Http\Controllers\API\SingPayWebhookController;
 use App\Http\Controllers\API\GoogleAuthController;
 use App\Http\Controllers\API\FacebookAuthController;
 use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\API\ForgotPasswordController;
+use App\Http\Controllers\API\ResetPasswordController;
 
 use App\Http\Controllers\API\Admin\UserController;
 use App\Http\Controllers\API\Admin\DashboardController;
@@ -51,6 +53,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/categories/popular', [CategoryController::class, 'popular']);
     Route::get('/categories/{id}', [CategoryController::class, 'show']);
+
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);//okay
+    Route::post('/reset-password', [ResetPasswordController::class, 'reset']);
 });
 
 /*
@@ -122,7 +127,7 @@ Route::prefix('v1/seller')
     ->middleware(['auth:sanctum', SellerMiddleware::class])
     ->group(function () {
 
-        Route::post('/products', [ProductController::class, 'store']);
+        Route::post('/products', [ProductController::class, 'store']);//okay -- online only
         Route::put('/products/{id}', [ProductController::class, 'update']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     });
@@ -137,7 +142,7 @@ Route::prefix('v1/admin')
     ->group(function () {
 
         // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'index']);
+        Route::get('/dashboard', [DashboardController::class, 'index']);//okay
 
         // Utilisateurs
         Route::get('/users', [UserController::class, 'index']);
@@ -152,7 +157,7 @@ Route::prefix('v1/admin')
         // Vendeurs
         Route::get('/sellers', [UserController::class, 'sellers']);
         Route::post('/sellers/{id}/approve', [UserController::class, 'approveSeller']);//okay
-        Route::post('/sellers/{id}/reject', [SellerController::class, 'rejectSeller']);
+        Route::post('/sellers/{id}/reject', [SellerController::class, 'rejectSeller']);//okay
         Route::post('/sellers/{id}/suspend', [UserController::class, 'suspendSeller']);
 
         // Commandes
