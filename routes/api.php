@@ -15,6 +15,8 @@ use App\Http\Controllers\API\FacebookAuthController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\ForgotPasswordController;
 use App\Http\Controllers\API\ResetPasswordController;
+use App\Http\Controllers\API\SellerDashboardController;
+
 
 use App\Http\Controllers\API\Admin\UserController;
 use App\Http\Controllers\API\Admin\DashboardController;
@@ -128,8 +130,13 @@ Route::prefix('v1/seller')
     ->group(function () {
 
         Route::post('/products', [ProductController::class, 'store']);//okay -- online only
+        Route::get('/products', [ProductController::class, 'myProducts']);
         Route::put('/products/{id}', [ProductController::class, 'update']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+         // **Nouvelles routes pour dashboard**
+        Route::get('/stats', [SellerDashboardController::class, 'stats']);
+        Route::get('/orders', [SellerDashboardController::class, 'recentOrders']);
     });
 
 /*

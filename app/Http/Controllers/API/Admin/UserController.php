@@ -63,6 +63,13 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
             'phone'    => 'nullable|string',
             'role'     => 'required|in:customer,seller,admin',
+
+            // vendeur (optionnel)
+            'shop_name'             => 'required_if:role,seller|unique:seller_profiles',
+            'shop_address'          => 'nullable|string|max:255',
+            'shop_city'             => 'required_if:role,seller|string|max:255',
+            'shop_country'          => 'nullable|string|max:255',
+            'shop_postal_code'      => 'nullable|string|max:20',
         ]);
 
         if ($validator->fails()) {
@@ -86,10 +93,14 @@ class UserController extends Controller
         // Création profil vendeur si nécessaire
         if ($request->role === 'seller') {
             SellerProfile::create([
-                'user_id'       => $user->id,
-                'shop_name'     => 'Boutique de '.$user->name,
-                'seller_status' => 'active',
-                'id_card_status'=> 'verified',
+                'user_id'          => $user->id,
+                'shop_name'        => $request->shop_name,
+                'shop_address'     => $request->shop_address,
+                'shop_city'        => $request->shop_city,
+                'shop_country'     => $request->shop_country ?? 'Gabon',
+                'shop_postal_code' => $request->shop_postal_code,
+                'seller_status'    => 'pending',
+                'id_card_status'   => 'pending',
             ]);
         }
 

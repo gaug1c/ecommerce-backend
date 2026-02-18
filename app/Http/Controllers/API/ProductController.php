@@ -402,4 +402,32 @@ public function index(Request $request)
             'message' => 'Produit supprimé avec succès'
         ]);
     }
+
+    /**
+ * Produits du vendeur connecté
+ */
+public function myProducts(Request $request)
+{
+    $user = $request->user();
+
+    if (!$user->isSeller() && !$user->isAdmin()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Vous n\'êtes pas autorisé à accéder à vos produits'
+        ], 403);
+    }
+
+    $query = Product::with('category')
+        ->where('seller_id', $user->id);
+
+    $products = $query->orderBy('created_at', 'desc')
+                      ->paginate(20);
+
+    return response()->json([
+        'success' => true,
+        'data' => $products,
+        'currency' => 'FCFA'
+    ]);
+}
+
 }
