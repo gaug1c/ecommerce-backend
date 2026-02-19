@@ -131,7 +131,8 @@ Route::prefix('v1/seller')
 
         Route::post('/products', [ProductController::class, 'store']);//okay -- online only
         Route::get('/products', [ProductController::class, 'myProducts']);
-        Route::put('/products/{id}', [ProductController::class, 'update']);
+        Route::get('/products/{id}', [ProductController::class, 'show']);
+        Route::post('/products/{id}', [ProductController::class, 'update']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
          // **Nouvelles routes pour dashboard**
@@ -181,6 +182,7 @@ Route::prefix('v1/admin')
         // Produits (admin)
         Route::post('/products', [ProductController::class, 'store']);
         Route::put('/products/{id}', [ProductController::class, 'update']);
+        Route::post('/products/{id}', [ProductController::class, 'update']);// juste pour la modificationde l'image
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
         // Catégories

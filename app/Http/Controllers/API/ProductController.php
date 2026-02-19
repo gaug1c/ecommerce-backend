@@ -271,6 +271,8 @@ public function index(Request $request)
     {
         $product = Product::find($id);
 
+        dd($request->all(), $request->hasFile('image'));
+
         if (!$product) {
             return response()->json([
                 'success' => false,
