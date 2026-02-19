@@ -132,6 +132,7 @@ Route::prefix('v1/seller')
         Route::post('/products', [ProductController::class, 'store']);//okay -- online only
         Route::get('/products', [ProductController::class, 'myProducts']);
         Route::get('/products/{id}', [ProductController::class, 'show']);
+        Route::put('/products/{id}', [ProductController::class, 'update']);
         Route::post('/products/{id}', [ProductController::class, 'update']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
