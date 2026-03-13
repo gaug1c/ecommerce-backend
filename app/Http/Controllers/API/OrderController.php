@@ -86,7 +86,7 @@ class OrderController extends Controller
                 'regex:/^(\+241|00241)?[0-9]{8,9}$/'
             ],
             'delivery_instructions' => 'nullable|string',
-            'payment_method' => 'required|in:card,mobile_money,bank_transfer,cash_on_delivery'
+            'payment_method' => 'required|in:card,MOOV,AIRTEL,cash_on_delivery'
         ], [
             'shipping_address.required' => 'L\'adresse de livraison est obligatoire',
             'shipping_city.required' => 'La ville de livraison est obligatoire',

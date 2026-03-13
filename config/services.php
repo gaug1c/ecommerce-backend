@@ -18,10 +18,10 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
     'singpay' => [
-    'client_id' => env('SINGPAY_CLIENT_ID'),
+    'client_id'     => env('SINGPAY_CLIENT_ID'),
     'client_secret' => env('SINGPAY_CLIENT_SECRET'),
-    'token_url' => env('SINGPAY_TOKEN_URL'),
-    'api_url' => env('SINGPAY_API_URL'),
+    'wallet_id'     => env('SINGPAY_WALLET_ID'),
+    'api_url'       => env('SINGPAY_API_URL'),
     ],
 
     'google' => [
@@ -33,6 +33,13 @@ return [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+    ],
+
+    'twilio' => [
+        'sid'             => env('TWILIO_SID'),
+        'token'           => env('TWILIO_AUTH_TOKEN'),
+        'whatsapp_from'   => env('TWILIO_WHATSAPP_FROM'),
+        'otp_content_sid' => env('TWILIO_OTP_CONTENT_SID'),
     ],
 
 

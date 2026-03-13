@@ -15,7 +15,7 @@ use App\Http\Controllers\API\FacebookAuthController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\ForgotPasswordController;
 use App\Http\Controllers\API\ResetPasswordController;
-use App\Http\Controllers\API\SellerDashboardController;
+use App\Http\Controllers\API\PhoneVerificationController;
 
 
 use App\Http\Controllers\API\Admin\UserController;
@@ -58,6 +58,8 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);//okay
     Route::post('/reset-password', [ResetPasswordController::class, 'reset']);
+
+    Route::get('/stats', [DashboardController::class, 'publicStats']);
 });
 
 /*
@@ -70,6 +72,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+
+    // Vérification téléphone via Twilio WhatsApp
+    Route::post('/phone/send-otp',   [PhoneVerificationController::class, 'sendOtp']);
+    Route::post('/phone/verify-otp', [PhoneVerificationController::class, 'verifyOtp']);
 
     // Devenir vendeur
     Route::post('/seller/become', [SellerController::class, 'becomeSeller']);

@@ -25,6 +25,7 @@ class Product extends Model
         'sku',
         'weight',
         'dimensions',
+        'color',
         'image',
         'images',
         'is_featured',

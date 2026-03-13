@@ -49,4 +49,20 @@ class DashboardController extends Controller
             ]
         ]);
     }
+
+    /**
+ * STATS PUBLIQUES (sans authentification)
+ */
+public function publicStats()
+{
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'total_products'  => \App\Models\Product::where('stock', '>', 0)->count(),
+            'total_sellers'   => User::whereHas('roles', fn ($q) => $q->where('name', 'seller'))->count(),
+            'total_categories'=> \App\Models\Category::count(),
+            'total_orders'    => class_exists(Order::class) ? Order::count() : 0,
+        ]
+    ]);
+}
 }

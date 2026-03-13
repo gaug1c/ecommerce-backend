@@ -39,6 +39,14 @@ public function index(Request $request)
             }
         )
         ->when(
+            $request->filled('color'),
+            fn ($q) => $q->where('color', $request->color)
+        )
+        ->when(
+            $request->filled('tail'),
+            fn ($q) => $q->where('dimensions', 'like', "%{$request->tail}%")
+        )
+        ->when(
             $request->filled('min_price'),
             fn ($q) => $q->where('price', '>=', (int) $request->min_price)
         )
@@ -85,6 +93,8 @@ public function index(Request $request)
             'on_sale'     => $request->boolean('on_sale'),
             'sort_by'     => $sortBy,
             'sort_order'  => $sortOrder,
+            'color' => $request->color,
+            'tail'  => $request->tail,
         ],
     ]);
 }
@@ -197,6 +207,7 @@ public function index(Request $request)
             'sku' => 'nullable|string|unique:products,sku',
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string',
+            'color'      => 'nullable|string|max:50',
             'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -298,6 +309,7 @@ public function index(Request $request)
             'sku' => 'nullable|string|unique:products,sku,' . $id,
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string',
+            'color'      => 'nullable|string|max:50',
             'image' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:5120', // TODO "image|mimes:jpeg,png,jpg,webp|max:5120" pour la version prod
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',

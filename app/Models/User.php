@@ -21,6 +21,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'phone_verified_at',
         'avatar',
         'is_active',
         'email_verified_at',
@@ -38,8 +39,9 @@ class User extends Authenticatable
      * Casts automatiques
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'is_active' => 'boolean',
+        'email_verified_at'  => 'datetime',
+        'phone_verified_at'  => 'datetime',
+        'is_active'          => 'boolean',
     ];
 
     /* =======================

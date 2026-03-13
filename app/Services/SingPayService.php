@@ -3,53 +3,34 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
 
 class SingPayService
 {
     protected string $apiUrl;
-    protected string $tokenUrl;
     protected string $clientId;
     protected string $clientSecret;
+    protected string $walletId;
 
     public function __construct()
     {
-        $this->apiUrl = config('services.singpay.api_url');   // ex: https://api.singpay.com
-        $this->tokenUrl = config('services.singpay.token_url'); // ex: https://api.singpay.com/oauth/token
-        $this->clientId = config('services.singpay.client_id');
-        $this->clientSecret = config('services.singpay.client_secret');
+        $this->apiUrl        = config('services.singpay.api_url');
+        $this->clientId      = config('services.singpay.client_id');
+        $this->clientSecret  = config('services.singpay.client_secret');
+        $this->walletId      = config('services.singpay.wallet_id');
     }
 
     /**
-     * Récupère le token OAuth 2.0 (cache pour éviter les appels répétés)
-     */
-    public function getAccessToken(): string
-    {
-        return Cache::remember('singpay_access_token', 3500, function () {
-            $response = Http::asForm()
-                ->post($this->tokenUrl, [
-                    'grant_type' => 'client_credentials',
-                    'client_id' => $this->clientId,
-                    'client_secret' => $this->clientSecret,
-                ]);
-
-            if (!$response->successful()) {
-                throw new \Exception('Unable to get SingPay access token: ' . $response->body());
-            }
-
-            return $response->json('access_token');
-        });
-    }
-
-    /**
-     * Retourne un client HTTP avec token pour production
+     * Client HTTP avec les headers d'authentification SingPay
      */
     protected function client()
     {
-        return Http::withToken($this->getAccessToken())
-            ->acceptJson()
-            ->timeout(30);
-        // ✅ SSL vérifié par défaut
+        return Http::withHeaders([
+            'x-client-id'     => $this->clientId,
+            'x-client-secret' => $this->clientSecret,
+            'x-wallet'        => $this->walletId,
+        ])
+        ->acceptJson()
+        ->timeout(30);
     }
 
     /**
@@ -59,8 +40,14 @@ class SingPayService
     public function payAirtel(array $data)
     {
         return $this->client()
-            ->post("{$this->apiUrl}/74/paiement", $data)
-            ->throw() // lance une exception si erreur HTTP
+            ->post("{$this->apiUrl}/74/paiement", [
+                'amount'       => $data['amount'],
+                'reference'    => $data['reference'],
+                'client_msisdn'=> $data['phone'],
+                'portefeuille' => $this->walletId,
+                'isTransfer'   => false,
+            ])
+            ->throw()
             ->json();
     }
 
@@ -71,13 +58,19 @@ class SingPayService
     public function payMoov(array $data)
     {
         return $this->client()
-            ->post("{$this->apiUrl}/62/paiement", $data)
+            ->post("{$this->apiUrl}/62/paiement", [
+                'amount'       => $data['amount'],
+                'reference'    => $data['reference'],
+                'client_msisdn'=> $data['phone'],
+                'portefeuille' => $this->walletId,
+                'isTransfer'   => false,
+            ])
             ->throw()
             ->json();
     }
 
     /**
-     * Récupérer le statut d’une transaction
+     * Statut d'une transaction
      * GET /transaction/api/status/{id}
      */
     public function getTransactionStatus(string $transactionId)
@@ -90,6 +83,7 @@ class SingPayService
 
     /**
      * Récupérer une transaction par référence
+     * GET /transaction/api/search/by-reference/{reference}
      */
     public function getTransactionByReference(string $reference)
     {
