@@ -9,6 +9,8 @@ use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\SellerController;
+use App\Http\Controllers\API\SellerProfileController;
+use App\Http\Controllers\API\SellerDashboardController;
 use App\Http\Controllers\API\SingPayWebhookController;
 use App\Http\Controllers\API\GoogleAuthController;
 use App\Http\Controllers\API\FacebookAuthController;
@@ -21,7 +23,7 @@ use App\Http\Controllers\API\PhoneVerificationController;
 use App\Http\Controllers\API\Admin\UserController;
 use App\Http\Controllers\API\Admin\DashboardController;
 use App\Http\Controllers\API\Admin\AdminOrderController;
-use App\Http\Controllers\API\Admin\AdminPaymentController;
+#use App\Http\Controllers\API\Admin\AdminPaymentController;
 
 use App\Http\Middleware\SellerMiddleware;
 
@@ -142,8 +144,13 @@ Route::prefix('v1/seller')
         Route::post('/products/{id}', [ProductController::class, 'update']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
-         // **Nouvelles routes pour dashboard**
-        Route::get('/stats', [SellerDashboardController::class, 'stats']);
+        // Profil vendeur
+        Route::get('/profile',  [SellerProfileController::class, 'show']);
+        Route::post('/profile', [SellerProfileController::class, 'update']);
+        Route::put('/profile',  [SellerProfileController::class, 'update']);
+
+        // Dashboard stats & commandes
+        Route::get('/stats',  [SellerDashboardController::class, 'stats']);
         Route::get('/orders', [SellerDashboardController::class, 'recentOrders']);
     });
 
