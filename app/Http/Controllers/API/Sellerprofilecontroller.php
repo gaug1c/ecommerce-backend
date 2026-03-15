@@ -6,14 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * Gère la lecture et la mise à jour du profil vendeur.
- *
- * Routes à ajouter dans api.php (dans le groupe v1/seller) :
- *   Route::get('/profile',  [SellerProfileController::class, 'show']);
- *   Route::post('/profile', [SellerProfileController::class, 'update']);
- *   Route::put('/profile',  [SellerProfileController::class, 'update']);
- */
+
 class SellerProfileController extends Controller
 {
     /**
