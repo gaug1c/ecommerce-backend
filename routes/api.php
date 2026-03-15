@@ -21,7 +21,7 @@ use App\Http\Controllers\API\PhoneVerificationController;
 use App\Http\Controllers\API\Admin\UserController;
 use App\Http\Controllers\API\Admin\DashboardController;
 use App\Http\Controllers\API\Admin\AdminOrderController;
-#use App\Http\Controllers\API\Admin\AdminPaymentController;
+use App\Http\Controllers\API\Admin\AdminPaymentController;
 
 use App\Http\Middleware\SellerMiddleware;
 
